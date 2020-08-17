@@ -2,14 +2,17 @@
 
 import sys
 
+
+LDI = 0b10000010
+PRN = 0b01000111
+HLT = 0b00000001
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        # self.address = 0
         self.reg = [0] * 8
-        self.ram = {}
+        self.ram = [0] * 256
         self.pc = 0
 
     def load(self):
@@ -21,8 +24,11 @@ class CPU:
 
         program = [
             # From print8.ls8
+            # instruction LDI
             0b10000010, # LDI R0,8
+            # register position
             0b00000000,
+            # the value we want to put in that position
             0b00001000,
             0b01000111, # PRN R0
             0b00000000,
@@ -43,9 +49,12 @@ class CPU:
         else:
             raise Exception("Unsupported ALU operation")
 
-    def ram_read(self, program_count):
-        print(self.ram[program_count])
-        return self.ram[program_count]
+    def ram_read(self, MAR):
+        # print(self.ram[MAR])
+        return self.ram[MAR]
+    
+    def ram_write(self, MAR, MDR):
+        self.ram[MAR] = MDR
         
     def trace(self):
         """
@@ -69,6 +78,25 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        print(self.pc)
-        self.trace()
-        pass
+        # self.trace()
+        # start running
+        running = True
+        
+        
+        while running:
+            # get the instruction from ram
+            
+            ir = self.ram_read(self.pc)
+            arg1 = self.pc + 1
+            arg2 = self.pc + 2
+            # print(ir)
+            if ir == LDI:
+                # print(self.pc + 1)
+                # break
+                self.reg[self.ram_read(arg1)] = self.ram_read(arg2)
+                self.pc += 3
+            if ir == PRN:
+                print(self.reg[self.ram_read(arg1)])
+                self.pc += 2
+            if ir == HLT:
+                running = False
