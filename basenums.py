@@ -47,4 +47,6 @@ while running:
         print(f"{registers[reg_num]}")
         pc+=3
     elif ir == 4:
-        
+        reg_num = memory[pc + 1]
+        print(registers[reg_num])
+        pc += 2
