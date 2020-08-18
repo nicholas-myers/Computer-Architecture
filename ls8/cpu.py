@@ -3,9 +3,7 @@
 import sys
 
 
-LDI = 0b10000010
-PRN = 0b01000111
-HLT = 0b00000001
+
 class CPU:
     """Main CPU class."""
 
@@ -17,22 +15,26 @@ class CPU:
 
     def load(self):
         """Load a program into memory."""
-
+        # take in a file, read the file
+        # 
         address = 0
 
         # For now, we've just hardcoded a program:
 
         program = [
-            # From print8.ls8
-            # instruction LDI
+
             0b10000010, # LDI R0,8
-            # register position
             0b00000000,
-            # the value we want to put in that position
             0b00001000,
+            0b10000010,# LDI R1,9
+            0b00000001,
+            0b00001001,
+            0b10100010, # MUL R0,R1
+            0b00000000,
+            0b00000001,
             0b01000111, # PRN R0
             0b00000000,
-            0b00000001, # HLT
+            0b00000001 # HLT
         ]
 
         for instruction in program:
@@ -82,7 +84,10 @@ class CPU:
         # start running
         running = True
         
-        
+        LDI = 0b10000010
+        PRN = 0b01000111
+        HLT = 0b00000001
+        MULTI = 0b10100010
         while running:
             # get the instruction from ram
             
@@ -91,8 +96,6 @@ class CPU:
             arg2 = self.pc + 2
             # print(ir)
             if ir == LDI:
-                # print(self.pc + 1)
-                # break
                 self.reg[self.ram_read(arg1)] = self.ram_read(arg2)
                 self.pc += 3
             if ir == PRN:
@@ -100,3 +103,8 @@ class CPU:
                 self.pc += 2
             if ir == HLT:
                 running = False
+            if ir == MULTI:
+                multiply = self.reg[self.ram_read(arg1)] * self.reg[self.ram_read(arg2)]
+                print(multiply)
+                self.pc += 3
+                return multiply
