@@ -20,26 +20,39 @@ class CPU:
         address = 0
 
         # For now, we've just hardcoded a program:
-
-        program = [
-
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b10000010,# LDI R1,9
-            0b00000001,
-            0b00001001,
-            0b10100010, # MUL R0,R1
-            0b00000000,
-            0b00000001,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001 # HLT
-        ]
-
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        if len(sys.argv) != 2:
+            print(sys.argv)
+            print("usage: ls8.py examples/filename")
+            sys.exit(1)
+        try: 
+            with open(sys.argv[1]) as f:
+                for line in f:
+                    line = line.strip()
+                    temp = line.split()
+                    if len(temp) == 0:
+                        continue
+                    if temp[0][0] == "#":
+                        continue
+                    try:
+                        num = temp[0]
+                        bin_num = 0
+                        count = 128
+                        # convert the number to its binary version
+                        for n in num:
+                            # print(count)
+                            bin_num += (int(n) * count)
+                            count = int(count / 2)
+                        
+                        self.ram[address] = bin_num
+                        address +=1
+                        # print(self.ram)
+                    except ValueError:
+                        print(f"Invalid Number: {temp[0]}")
+                        sys.exit(1)
+        except FileNotFoundError:
+            print(f"Couldn't open {sys.argv[1]}")
+        if address == 0:
+            print("program was Empty!")
 
 
     def alu(self, op, reg_a, reg_b):
