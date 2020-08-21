@@ -66,12 +66,11 @@ class CPU:
                     try:
                         num = temp[0]
                         bin_num = 0
-                        count = 128
+                        place = 128
                         # convert the number to its binary version
                         for n in num:
-                            # print(count)
-                            bin_num += (int(n) * count)
-                            count = int(count / 2)
+                            bin_num += (int(n) * place)
+                            place = int(place / 2)
                         
                         self.ram[address] = bin_num
                         address +=1
