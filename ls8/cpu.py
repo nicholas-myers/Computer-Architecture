@@ -3,28 +3,27 @@
 import sys
 
 ops = {
-    "LDI": 0b10000010,
-    "PRN": 0b01000111,
-    "HLT": 0b00000001,
-    "MUL": 0b10100010,
-    "PUSH": 0b01000101,
-    "POP": 0b01000110,
-    "CALL": 0b01010000,
-    "ADD": 0b10100000,
-    "RET": 0b00010001,
-    "JMP": 0b01010100,
-    "CMP": 0b10100111,
-    "JEQ": 0b01010101,
-    "JNE": 0b01010110,
-    "ST": 0b10000100,
-    "PRA": 0b01001000
+    0b01010000: "CALL",
+    0b10100111: "CMP",
+    0b00000001: "HLT",
+    0b01010101: "JEQ",
+    0b01010100: "JMP",
+    0b01010110: "JNE",
+    0b10000010: "LDI",
+    0b01000110: "POP",
+    0b01001000: "PRA",
+    0b01000111: "PRN",
+    0b01000101: "PUSH",
+    0b00010001: "RET",
+    0b10000100: "ST"
 }
 
-# program count
-PC = 0
-# MAR is memory address register 
-# self.ram[address]
-# MDR is value or what we just read
+alus = {
+    0b10100000: "ADD",
+    0b10101000: "AND",
+    0b10100010: "MUL"
+}
+
 # Flag
 FL = [0] * 3
 # Stack Pointer
@@ -34,9 +33,9 @@ IM = 5
 # Interrupt status
 IS = 6
 INT = [0] * 8
+
 class CPU:
     """Main CPU class."""
-
     def __init__(self):
         """Construct a new CPU."""
         self.reg = [0] * 8
@@ -46,10 +45,8 @@ class CPU:
 
     def load(self):
         """Load a program into memory."""
-        # take in a file, read the file
-        # 
         address = 0
-
+        # take in a file, read the file
         if len(sys.argv) != 2:
             print(sys.argv)
             print("usage: ls8.py examples/filename")
@@ -67,7 +64,7 @@ class CPU:
                         num = temp[0]
                         bin_num = 0
                         place = 128
-                        # convert the number to its binary version
+                        # convert the number to its decimal version
                         for n in num:
                             bin_num += (int(n) * place)
                             place = int(place / 2)
@@ -83,7 +80,44 @@ class CPU:
         if address == 0:
             print("program was Empty!")
 
-
+    def add_alu(self, reg_a, reg_b):
+        self.reg[reg_a] += self.reg[reg_b]
+    
+    def and_alu(self, reg_a, reg_b):
+        num1 = int(self.reg[reg_a])
+        print(num1)
+        print(bin(num1))
+        num2 = int(self.reg[reg_b])
+        print(num2)
+        print(bin(num2))
+        res = bin(num1 & num2)
+        print(res)
+    
+    def cmp_alu(self, reg_a, reg_b):
+        if self.reg[reg_a] == self.reg[reg_b]:
+            # set FL from E to 1
+            FL[-1] = 1
+        else:
+            # other wise set to 0
+            FL[-1] = 0
+            
+        if self.reg[reg_a] > self.reg[reg_b]:
+                # set FL from G to 1
+                FL[-2] = 1
+        else:
+            # otherwise to 0
+            FL[-2] = 0
+                            
+        if self.reg[reg_a] < self.reg[reg_b]:
+            # set FL bit from L to 1
+            FL[-3] = 1
+        else:
+            # otherwise set to 0
+            FL[-3] = 0
+    
+    def mul_alu(self, reg_a, reg_b):
+        self.reg[reg_a] *= self.reg[reg_b]
+        
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
         # print(reg_a, reg_b)
@@ -122,8 +156,6 @@ class CPU:
             else:
                 # otherwise set to 0
                 FL[-3] = 0
-                
-            # print(FL)
             
         if op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
@@ -136,6 +168,10 @@ class CPU:
     
     def ram_write(self, MAR, MDR):
         self.ram[MAR] = MDR
+        
+    def ldi(self, reg_num, value):
+        self.reg[reg_num] = value
+        self.pc += 3
 
     def run(self):
         """Run the CPU."""
