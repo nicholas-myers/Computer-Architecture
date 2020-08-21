@@ -94,8 +94,14 @@ class CPU:
         if op == "AND":
             # BITWISE _ AND rega and reg b
             # store in rega
-            print(self.reg[reg_a] & self.reg[reg_b])
-            pass
+            num1 = int(self.reg[reg_a])
+            print(num1)
+            print(bin(num1))
+            num2 = int(self.reg[reg_b])
+            print(num2)
+            print(bin(num2))
+            res = bin(num1 & num2)
+            print(res)
         if op == "CMP":
             if self.reg[reg_a] == self.reg[reg_b]:
                 # set FL from E to 1
@@ -153,6 +159,7 @@ class CPU:
         JNE = 0b01010110
         ST = 0b10000100
         PRA = 0b01001000
+        AND = 0b10101000
         
         while running:
             # get the instruction from ram
@@ -225,3 +232,6 @@ class CPU:
             if ir == PRA:
                 print(self.reg[arg1])
                 self.pc += 2
+            if ir == AND:
+                self.alu("AND", arg1, arg2)
+                self.pc += 3
