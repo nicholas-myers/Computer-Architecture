@@ -3,6 +3,8 @@
 import sys
 
 ops = {
+    0b10100000: "ADD",
+    0b10101000: "AND",
     0b01010000: "CALL",
     0b10100111: "CMP",
     0b00000001: "HLT",
@@ -10,6 +12,7 @@ ops = {
     0b01010100: "JMP",
     0b01010110: "JNE",
     0b10000010: "LDI",
+    0b10100010: "MUL",
     0b01000110: "POP",
     0b01001000: "PRA",
     0b01000111: "PRN",
@@ -42,7 +45,8 @@ class CPU:
         self.reg[SP] = 0xf4
         self.ram = [0] * 256
         self.pc = 0
-
+        self.running = False
+        
     def load(self):
         """Load a program into memory."""
         address = 0
@@ -80,18 +84,7 @@ class CPU:
         if address == 0:
             print("program was Empty!")
 
-    def add_alu(self, reg_a, reg_b):
-        self.reg[reg_a] += self.reg[reg_b]
     
-    def and_alu(self, reg_a, reg_b):
-        num1 = int(self.reg[reg_a])
-        print(num1)
-        print(bin(num1))
-        num2 = int(self.reg[reg_b])
-        print(num2)
-        print(bin(num2))
-        res = bin(num1 & num2)
-        print(res)
     
     def cmp_alu(self, reg_a, reg_b):
         if self.reg[reg_a] == self.reg[reg_b]:
@@ -161,7 +154,7 @@ class CPU:
             self.reg[reg_a] *= self.reg[reg_b]
         # else:
         #     raise Exception("Unsupported ALU operation")
-    
+    # ram functions
     def ram_read(self, MAR):
         # print(self.ram[MAR])
         return self.ram[MAR]
@@ -169,15 +162,42 @@ class CPU:
     def ram_write(self, MAR, MDR):
         self.ram[MAR] = MDR
         
+    # OP functions
+    def add_alu(self, reg_a, reg_b):
+        self.reg[reg_a] += self.reg[reg_b]
+    
+    def and_alu(self, reg_a, reg_b):
+        num1 = int(self.reg[reg_a])
+        print(num1)
+        print(bin(num1))
+        num2 = int(self.reg[reg_b])
+        print(num2)
+        print(bin(num2))
+        res = bin(num1 & num2)
+        print(res)
+        
     def ldi(self, reg_num, value):
         self.reg[reg_num] = value
         self.pc += 3
 
+    def hlt(self):
+        self.running = False
+
+    def prn(self, reg_num):
+        print(self.reg[reg_num])
+        self.pc += 2
+        
+    def push_reg(self):
+        pass
+    
+    def pop_reg(self):
+        pass
+    
     def run(self):
         """Run the CPU."""
         # self.trace()
         # start running
-        running = True
+        self.running = True
         
         LDI = 0b10000010
         PRN = 0b01000111
@@ -196,7 +216,7 @@ class CPU:
         PRA = 0b01001000
         AND = 0b10101000
         
-        while running:
+        while self.running:
             # get the instruction from ram
             
             ir = self.ram_read(self.pc)
@@ -210,7 +230,7 @@ class CPU:
                 print(self.reg[arg1])
                 self.pc += 2
             if ir == HLT:
-                running = False
+                self.running = False
             if ir == ADD:
                 self.alu("ADD", arg1, arg2)
                 self.pc+=3
